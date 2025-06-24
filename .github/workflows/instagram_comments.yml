@@ -24,6 +24,9 @@ jobs:
         pip install -r requirements.txt
 
     - name: Run polling script
+      env:
+        INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       run: |
         python poll_comments.py
 
