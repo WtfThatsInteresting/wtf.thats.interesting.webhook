@@ -77,7 +77,14 @@ def reply_to_comments(comments):
 # Function to load existing data
 def load_data():
     if os.path.exists(DATA_FILE):
-        return pd.read_csv(DATA_FILE)
+        try:
+            df = pd.read_csv(DATA_FILE)
+            # If file is empty, create new DataFrame
+            if df.empty or list(df.columns) == [0]:
+                return pd.DataFrame(columns=["media_id", "comment_id"])
+            return df
+        except pd.errors.EmptyDataError:
+            return pd.DataFrame(columns=["media_id", "comment_id"])
     return pd.DataFrame(columns=["media_id", "comment_id"])
 
 # Function to save data
