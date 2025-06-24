@@ -17,26 +17,42 @@ print("[INFO] INSTAGRAM_ACCESS_TOKEN loaded:", bool(INSTAGRAM_ACCESS_TOKEN))
 print("[INFO] GEMINI_API_KEY loaded:", bool(GEMINI_API_KEY))
 print("[INFO] INSTAGRAM_ID loaded:", bool(INSTAGRAM_ID))
 
-# Function to fetch comments for all media
 def fetch_comments():
-    print("[INFO] Fetching media IDs from Instagram...")
+    print("[INFO] Fetching media IDs from Instagram (with pagination)...")
     media_url = f"{INSTAGRAM_API_URL}/v23.0/{INSTAGRAM_ID}/media?fields=id&access_token={INSTAGRAM_ACCESS_TOKEN}"
-    media_response = requests.get(media_url)
-    media_data = media_response.json()
-    print(f"[DEBUG] Media response: {media_data}")
-
     comments = []
 
-    for media in media_data.get("data", []):
-        media_id = media["id"]
-        print(f"[INFO] Fetching comments for media_id: {media_id}")
-        comments_url = f"{INSTAGRAM_API_URL}/v23.0/{media_id}/comments?fields=id,text&access_token={INSTAGRAM_ACCESS_TOKEN}"
-        comments_response = requests.get(comments_url)
-        comments_data = comments_response.json()
-        print(f"[DEBUG] Comments for media {media_id}: {comments_data}")
+    while media_url:
+        media_response = requests.get(media_url)
+        if media_response.status_code != 200:
+            print(f"[ERROR] Failed to fetch media: {media_response.status_code} {media_response.text}")
+            break
 
-        for comment in comments_data.get("data", []):
-            comments.append({"media_id": media_id, "comment_id": comment["id"], "text": comment["text"]})
+        media_data = media_response.json()
+        print(f"[DEBUG] Media response: {media_data}")
+
+        for media in media_data.get("data", []):
+            media_id = media.get("id")
+            print(f"[INFO] Fetching comments for media_id: {media_id}")
+            comments_url = f"{INSTAGRAM_API_URL}/v23.0/{media_id}/comments?fields=id,text&access_token={INSTAGRAM_ACCESS_TOKEN}"
+            comments_response = requests.get(comments_url)
+
+            if comments_response.status_code != 200:
+                print(f"[ERROR] Failed to fetch comments for media {media_id}: {comments_response.text}")
+                continue
+
+            comments_data = comments_response.json()
+            print(f"[DEBUG] Comments for media {media_id}: {comments_data}")
+
+            for comment in comments_data.get("data", []):
+                comments.append({
+                    "media_id": media_id,
+                    "comment_id": comment.get("id"),
+                    "text": comment.get("text")
+                })
+
+        # Move to next page
+        media_url = media_data.get("paging", {}).get("next")
 
     print(f"[INFO] Total comments fetched: {len(comments)}")
     return comments
