@@ -1,6 +1,7 @@
 name: Instagram Comments Polling
 
 on:
+  workflow_dispatch: # Allows manual triggering of the workflow
   schedule:
     - cron: "0 * * * *" # Runs every hour
 
