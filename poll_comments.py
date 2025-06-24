@@ -136,9 +136,17 @@ def main():
     existing_ids = set(existing_data["comment_id"])
 
     comments = fetch_comments()
+    print(comments)
     print(f"[INFO] Filtering new comments...")
-    new_comments = [comment for comment in comments if comment["comment_id"] not in existing_ids]
-    print(f"[INFO] New comments to reply: {len(new_comments)}")
+    new_comments = []
+    for comment in comments:
+        comment_id = comment["comment_id"]
+        print(f"[DEBUG] Comparing comment_id: {comment_id} with existing_ids: {existing_ids}")
+        if comment_id not in existing_ids:
+            new_comments.append(comment)
+        else:
+            print(f"[INFO] Skipping already replied comment_id: {comment_id}")
+    print(f"[INFO] New comments to reply: {new_comments}")
 
     replied_comments = reply_to_comments(new_comments)
 
