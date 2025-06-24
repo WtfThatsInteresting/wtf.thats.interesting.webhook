@@ -51,9 +51,22 @@ def get_gemini_reply(user_comment):
     headers = {"Content-Type": "application/json"}
     payload = {
         "contents": [
-            {"parts": [{"text": f"send a very nice 5 words reply to this instagram comment: '{user_comment}'"}]}
+            {
+                "parts": [
+                    {
+                        "text": (
+                            f"You are a witty, human-sounding Instagram creator. "
+                            f"Reply naturally and politely to this comment: '{user_comment}'. "
+                            "Your reply should sound like a real human wrote it, match the tone of the comment, "
+                            "and be short (under 10 words), kind, and emotionally intelligent. "
+                            "Do not give multiple options or explanations. Just return the final reply text only."
+                        )
+                    }
+                ]
+            }
         ]
     }
+
     params = {"key": GEMINI_API_KEY}
     response = requests.post(url, headers=headers, params=params, json=payload)
     print("[DEBUG] Gemini API response status:", response.status_code)
@@ -79,7 +92,7 @@ def reply_to_comments(comments):
         print(f"[INFO] Gemini reply: {gemini_reply}")
 
         if gemini_reply:
-            reply_url = f"{INSTAGRAM_API_URL}/{comment['comment_id']}/replies?access_token={INSTAGRAM_ACCESS_TOKEN}"
+            reply_url = f"{INSTAGRAM_API_URL}/{INSTAGRAM_ID}/{comment['comment_id']}/replies?access_token={INSTAGRAM_ACCESS_TOKEN}"
             reply_payload = {"text": gemini_reply}
             reply_response = requests.post(reply_url, json=reply_payload)
             print(f"[DEBUG] Instagram reply response status: {reply_response.status_code}")
