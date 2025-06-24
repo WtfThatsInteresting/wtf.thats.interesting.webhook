@@ -8,18 +8,19 @@ DATA_FILE = "comments_data.csv"
 # Instagram API credentials
 INSTAGRAM_ACCESS_TOKEN = os.environ.get("INSTAGRAM_ACCESS_TOKEN")
 INSTAGRAM_API_URL = "https://graph.facebook.com"
+INSTAGRAM_ID = os.environ.get("INSTAGRAM_ID")
 
 # Gemini API credentials
-GEMINI_API_URL = "https://api.gemini.com/reply"
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 print("[INFO] INSTAGRAM_ACCESS_TOKEN loaded:", bool(INSTAGRAM_ACCESS_TOKEN))
 print("[INFO] GEMINI_API_KEY loaded:", bool(GEMINI_API_KEY))
+print("[INFO] INSTAGRAM_ID loaded:", bool(INSTAGRAM_ID))
 
 # Function to fetch comments for all media
 def fetch_comments():
     print("[INFO] Fetching media IDs from Instagram...")
-    media_url = f"{INSTAGRAM_API_URL}/me/media?fields=id&access_token={INSTAGRAM_ACCESS_TOKEN}"
+    media_url = f"{INSTAGRAM_API_URL}/v23.0/{INSTAGRAM_ID}/media?fields=id&access_token={INSTAGRAM_ACCESS_TOKEN}"
     media_response = requests.get(media_url)
     media_data = media_response.json()
     print(f"[DEBUG] Media response: {media_data}")
@@ -29,7 +30,7 @@ def fetch_comments():
     for media in media_data.get("data", []):
         media_id = media["id"]
         print(f"[INFO] Fetching comments for media_id: {media_id}")
-        comments_url = f"{INSTAGRAM_API_URL}/{media_id}/comments?fields=id,text&access_token={INSTAGRAM_ACCESS_TOKEN}"
+        comments_url = f"{INSTAGRAM_API_URL}/v23.0/{media_id}/comments?fields=id,text&access_token={INSTAGRAM_ACCESS_TOKEN}"
         comments_response = requests.get(comments_url)
         comments_data = comments_response.json()
         print(f"[DEBUG] Comments for media {media_id}: {comments_data}")
