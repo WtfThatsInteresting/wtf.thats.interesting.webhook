@@ -92,7 +92,7 @@ def reply_to_comments(comments):
         print(f"[INFO] Gemini reply: {gemini_reply}")
 
         if gemini_reply:
-            reply_url = f"{INSTAGRAM_API_URL}/{INSTAGRAM_ID}/{comment['comment_id']}/replies?access_token={INSTAGRAM_ACCESS_TOKEN}"
+            reply_url = f"{INSTAGRAM_API_URL}/v23.0/{comment['comment_id']}/replies?access_token={INSTAGRAM_ACCESS_TOKEN}"
             reply_payload = {"text": gemini_reply}
             reply_response = requests.post(reply_url, json=reply_payload)
             print(f"[DEBUG] Instagram reply response status: {reply_response.status_code}")
