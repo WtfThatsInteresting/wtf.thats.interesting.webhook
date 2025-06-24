@@ -148,9 +148,9 @@ def main():
             print(f"[INFO] Skipping already replied comment_id: {comment_id}")
     print(f"[INFO] New comments to reply: {new_comments}")
 
-    # replied_comments = reply_to_comments(new_comments)
+    replied_comments = reply_to_comments(new_comments)
 
-    # save_data(replied_comments)
+    save_data(replied_comments)
     print("[INFO] Polling workflow completed.")
 
 if __name__ == "__main__":
