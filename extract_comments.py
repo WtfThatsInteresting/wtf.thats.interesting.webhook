@@ -10,10 +10,24 @@ INSTAGRAM_ID = os.environ.get("INSTAGRAM_ID")
 print("[INFO] INSTAGRAM_ACCESS_TOKEN loaded:", bool(INSTAGRAM_ACCESS_TOKEN))
 print("[INFO] INSTAGRAM_ID loaded:", bool(INSTAGRAM_ID))
 
+def load_existing_data():
+    print(f"[INFO] Loading existing data from {DATA_FILE} ...")
+    if os.path.exists(DATA_FILE):
+        try:
+            df = pd.read_csv(DATA_FILE)
+            print(f"[INFO] Loaded {len(df)} existing records.")
+            return df
+        except pd.errors.EmptyDataError:
+            print("[WARN] Existing data file is empty.")
+            return pd.DataFrame(columns=["media_id", "comment_id", "text", "replied"])
+    print("[INFO] No existing data file found.")
+    return pd.DataFrame(columns=["media_id", "comment_id", "text", "replied"])
+
 def fetch_comments():
     print("[INFO] Fetching media IDs from Instagram (with pagination)...")
     media_url = f"{INSTAGRAM_API_URL}/v23.0/{INSTAGRAM_ID}/media?fields=id&access_token={INSTAGRAM_ACCESS_TOKEN}"
     comments = []
+    existing_data = load_existing_data()
 
     while media_url:
         media_response = requests.get(media_url)
@@ -38,11 +52,18 @@ def fetch_comments():
             print(f"[DEBUG] Comments for media {media_id}: {comments_data}")
 
             for comment in comments_data.get("data", []):
+                comment_id = comment.get("id")
+                text = comment.get("text")
+                # Check if the comment already exists in the existing data
+                if not existing_data.empty and comment_id in existing_data["comment_id"].values:
+                    replied_status = existing_data.loc[existing_data["comment_id"] == comment_id, "replied"].values[0]
+                else:
+                    replied_status = False
                 comments.append({
                     "media_id": media_id,
-                    "comment_id": comment.get("id"),
-                    "text": comment.get("text"),
-                    "replied": False
+                    "comment_id": comment_id,
+                    "text": text,
+                    "replied": replied_status
                 })
 
         # Move to next page
