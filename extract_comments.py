@@ -26,8 +26,9 @@ def load_existing_data():
 def fetch_comments():
     print("[INFO] Fetching media IDs from Instagram (with pagination)...")
     media_url = f"{INSTAGRAM_API_URL}/v23.0/{INSTAGRAM_ID}/media?fields=id&access_token={INSTAGRAM_ACCESS_TOKEN}"
-    comments = []
     existing_data = load_existing_data()
+    comments = existing_data.to_dict(orient="records") if not existing_data.empty else []
+    existing_comment_ids = set(existing_data["comment_id"].astype(str)) if not existing_data.empty else set()
 
     while media_url:
         media_response = requests.get(media_url)
@@ -52,19 +53,17 @@ def fetch_comments():
             print(f"[DEBUG] Comments for media {media_id}: {comments_data}")
 
             for comment in comments_data.get("data", []):
-                comment_id = comment.get("id")
+                comment_id = str(comment.get("id"))
                 text = comment.get("text")
-                # Check if the comment already exists in the existing data
-                if not existing_data.empty and comment_id in existing_data["comment_id"].values:
-                    replied_status = existing_data.loc[existing_data["comment_id"] == comment_id, "replied"].values[0]
-                else:
-                    replied_status = False
-                comments.append({
-                    "media_id": media_id,
-                    "comment_id": comment_id,
-                    "text": text,
-                    "replied": replied_status
-                })
+                # Only add if comment_id does not exist
+                if comment_id not in existing_comment_ids:
+                    comments.append({
+                        "media_id": media_id,
+                        "comment_id": comment_id,
+                        "text": text,
+                        "replied": False
+                    })
+                    existing_comment_ids.add(comment_id)
 
         # Move to next page
         media_url = media_data.get("paging", {}).get("next")
