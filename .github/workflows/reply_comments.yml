@@ -1,14 +1,13 @@
-name: Instagram Comments Polling
+name: Reply to Instagram Comments
 
 on:
-  workflow_dispatch: # Allows manual triggering of the workflow
-  # schedule:
-  #   - cron: "0 6 * * *" # Runs every day at 6:00 AM UTC
+  schedule:
+    - cron: "0 12 * * *" # Runs every day at 12 PM UTC
+  workflow_dispatch:
 
 jobs:
-  poll-comments:
+  reply-comments:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -17,25 +16,24 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.x'
-
+    
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-
-    - name: Run polling script
+    
+    - name: Run reply_comments.py
       env:
-        INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        INSTAGRAM_ID: ${{ secrets.INSTAGRAM_ID }}
+        INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
       run: |
-        python poll_comments.py
-
+        python reply_comments.py
+    
     - name: Commit and push changes
       run: |
         git config --local user.name "github-actions"
         git config --local user.email "github-actions@github.com"
         git add .
-        git diff --cached --quiet || git commit -m "Auto-commit: Update files after polling Instagram comments"
+        git diff --cached --quiet || git commit -m "Auto-commit: Update after replying to comments"
         git pull --rebase origin main || echo "No changes to pull"
         git push || echo "No changes to push"

@@ -1,12 +1,12 @@
-name: Instagram Comments Polling
+name: Extract Instagram Comments
 
 on:
   workflow_dispatch: # Allows manual triggering of the workflow
-  # schedule:
-  #   - cron: "0 6 * * *" # Runs every day at 6:00 AM UTC
+  schedule:
+    - cron: "0 6 * * *" # Runs every day at 6:00 AM UTC
 
 jobs:
-  poll-comments:
+  extract-comments:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,19 +23,18 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run polling script
+    - name: Run extract_comments.py
       env:
         INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         INSTAGRAM_ID: ${{ secrets.INSTAGRAM_ID }}
       run: |
-        python poll_comments.py
-
+        python extract_comments.py
+    
     - name: Commit and push changes
       run: |
         git config --local user.name "github-actions"
         git config --local user.email "github-actions@github.com"
         git add .
-        git diff --cached --quiet || git commit -m "Auto-commit: Update files after polling Instagram comments"
+        git diff --cached --quiet || git commit -m "Auto-commit: Update comments_data.csv after extraction"
         git pull --rebase origin main || echo "No changes to pull"
         git push || echo "No changes to push"
