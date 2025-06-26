@@ -36,7 +36,7 @@ def get_gemini_reply(user_comment):
     # Choose a random Gemini API key for each request
     if not GEMINI_API_KEYS:
         print("[ERROR] No Gemini API keys provided!")
-        return "Thank you for your comment! 🙏"
+        return None, False
     gemini_key = random.choice(GEMINI_API_KEYS)
     params = {"key": gemini_key}
     response = requests.post(url, headers=headers, params=params, json=payload)
@@ -45,13 +45,17 @@ def get_gemini_reply(user_comment):
         result = response.json()
         print(f"[DEBUG] Gemini API result: {result}")
         try:
-            return result["candidates"][0]["content"]["parts"][0]["text"]
+            reply_text = result["candidates"][0]["content"]["parts"][0]["text"]
+            return reply_text, True
         except (KeyError, IndexError):
             print("[WARN] Unexpected Gemini API response structure.")
-            return "Thank you for your comment! 🙏"
+            return None, False
     else:
         print(f"[ERROR] Gemini API call failed: {response.text}")
-        return "Thank you for your comment! 🙏"
+        # If rate limit or quota error, do not mark as replied
+        if response.status_code == 429 or 'quota' in response.text.lower() or 'limit' in response.text.lower():
+            return None, False
+        return None, False
 
 def load_data():
     print(f"[INFO] Loading data from {DATA_FILE} ...")
@@ -73,7 +77,10 @@ def reply_to_comments(comments, df):
     replied_comments = []
     for comment in comments:
         print(f"[INFO] Replying to comment_id: {comment['comment_id']} on media_id: {comment['media_id']}")
-        gemini_reply = get_gemini_reply(comment["text"])
+        gemini_reply, can_reply = get_gemini_reply(comment["text"])
+        if not can_reply:
+            print(f"[WARN] Skipping comment_id: {comment['comment_id']} due to Gemini API limit or error.")
+            continue
         print(f"[INFO] Gemini reply: {gemini_reply}")
         if gemini_reply:
             reply_url = f"{INSTAGRAM_API_URL}/v23.0/{comment['comment_id']}/replies?access_token={INSTAGRAM_ACCESS_TOKEN}"
