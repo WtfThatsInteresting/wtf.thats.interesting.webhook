@@ -83,18 +83,18 @@ def reply_to_comments(comments, df):
             print(f"[WARN] Skipping comment_id: {comment['comment_id']} due to Gemini API limit or error.")
             continue
         print(f"[INFO] Gemini reply: {gemini_reply}")
-        # if gemini_reply:
-        #     reply_url = f"{INSTAGRAM_API_URL}/v23.0/{comment['comment_id']}/replies?access_token={INSTAGRAM_ACCESS_TOKEN}"
-        #     reply_payload = {"message": gemini_reply}
-        #     reply_response = requests.post(reply_url, data=reply_payload)
-        #     print(f"[DEBUG] Instagram reply response status: {reply_response.status_code}")
-        #     if reply_response.status_code == 200:
-        #         print(f"[INFO] Successfully replied to comment_id: {comment['comment_id']}")
-        #         # Mark as replied in DataFrame
-        #         df.loc[df['comment_id'] == comment['comment_id'], 'replied'] = True
-        #     else:
-        #         print(f"[ERROR] Failed to reply to comment_id: {comment['comment_id']}. Response: {reply_response.text}")
-        #     replied_comments.append(comment)
+        if gemini_reply:
+            reply_url = f"{INSTAGRAM_API_URL}/v23.0/{comment['comment_id']}/replies?access_token={INSTAGRAM_ACCESS_TOKEN}"
+            reply_payload = {"message": gemini_reply}
+            reply_response = requests.post(reply_url, data=reply_payload)
+            print(f"[DEBUG] Instagram reply response status: {reply_response.status_code}")
+            if reply_response.status_code == 200:
+                print(f"[INFO] Successfully replied to comment_id: {comment['comment_id']}")
+                # Mark as replied in DataFrame
+                df.loc[df['comment_id'] == comment['comment_id'], 'replied'] = True
+            else:
+                print(f"[ERROR] Failed to reply to comment_id: {comment['comment_id']}. Response: {reply_response.text}")
+            replied_comments.append(comment)
     print(f"[INFO] Total comments replied: {len(replied_comments)}")
     return replied_comments
 
