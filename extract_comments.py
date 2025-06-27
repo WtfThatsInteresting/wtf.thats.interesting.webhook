@@ -63,6 +63,7 @@ def fetch_comments():
                         "text": text,
                         "replied": False
                     })
+                    print(f"[INFO] New comment found: {comment_id} for text {text} in media {media_id}")
                     existing_comment_ids.add(comment_id)
 
         # Move to next page
